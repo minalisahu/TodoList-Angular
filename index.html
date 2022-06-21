@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+    <head>
+            <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+
+        <!-- jQuery library -->
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.slim.min.js"></script>
+
+        <!-- Popper JS -->
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+
+        <!-- Latest compiled JavaScript -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+      </head>
+    <body>
+        <div class="container card">
+            <h2 class="text-success text-center"> Todo List</h2><hr>
+            <div class="card-body col-sm-10" style="margin-left:125px">
+                <form  action="#"  class="bg-light"> 
+                  <div id="todoSuccess" class="text-success font-weight-bold" style="display: none;"></div>
+
+                    <div class="row">
+                        <div class="col-lg-7 col-md-7 col-sm-7">
+
+                            <input type="text" class="form-control" placeholder="Enter your task here" id="addTaskValue">
+                            <input type="hidden" id="taskUpdateIndexValue">
+                            <input type="text" class="form-control" id="updateTask" style="display: none;">
+
+                                <div class="text-danger font-weight-bold" id ="todoErrors" style="display: none;"></div>
+                        </div>
+                        <div class="col-lg-5 col-md-5 col-sm-5">
+                            <input type="submit" class="btn btn-success"
+                                id="addtaskbtn" value="Add" >
+                              <input type="submit" class="btn btn-success"
+                              id="updatetaskbtn" value="Update" style="display:none">
+                        </div>
+                    </div><hr>
+                    <table class="table table-bordered border-primary" id="todoItems">
+                       
+                        <tbody ></tbody>
+                      </table>
+                </form>
+            </div>
+         </div>
+          
+        <script>
+            showTask();              
+
+            let taskData = document.getElementById("addTaskValue");
+            let addTaskButton = document.getElementById("addtaskbtn");
+
+            //add task data
+
+            addTaskButton.addEventListener("click",function(){
+              taskValue = taskData.value;
+
+                // validation
+                if(taskValue == "")
+                 {
+                    document.getElementById('todoErrors').innerHTML="**Please enter a task";
+                    
+                      document.getElementById("todoErrors").style.display = "block";
+                      setTimeout(function() {
+                        document.getElementById("todoErrors").style.display = "none";
+                      }, 3000); 
+                     return false;
+
+                 } if((taskValue.length <=2) || (taskValue.length > 20)){
+                    document.getElementById('todoErrors').innerHTML="**task name must be between 2 to 20";
+                    document.getElementById("todoErrors").style.display = "block";
+                      setTimeout(function() {
+                        document.getElementById("todoErrors").style.display = "none";
+                      }, 3000); 
+                    return false;
+                 }if(!isNaN(taskValue)){
+                    document.getElementById('todoErrors').innerHTML="**Only alphabate allow";
+                    document.getElementById("todoErrors").style.display = "block";
+                      setTimeout(function() {
+                        document.getElementById("todoErrors").style.display = "none";
+                      }, 3000); 
+                    return false;
+                 }else{
+                  let localValue = localStorage.getItem("localTask");          // getting value from local storage
+                    if(localValue == null){                                   //check value is exist or not 
+                      taskObj = [];                                           // If not exits then store null array in taskObj
+                    }
+                    else{
+                      taskObj = JSON.parse(localValue)                       // If exits then create value in json object (using JSON parse to get value string to object)
+                    }
+                  taskObj.push(taskValue);        
+                  localStorage.setItem("localTask",JSON.stringify(taskObj));  // set value in local storage   
+                  taskData.value = '';
+                  document.getElementById('todoSuccess').innerHTML="Successfully added !!";   
+                  document.getElementById("todoSuccess").style.display = "block";
+                  setTimeout(function() {
+                    document.getElementById("todoSuccess").style.display = "none";
+                  }, 3000); 
+                 }            
+              showTask();              
+            })
+
+            //show task data on list
+
+            function showTask(){
+              let localValue = localStorage.getItem("localTask");  // getting value from local storage
+              if(localValue == null){                             //check value is exist or not 
+                taskObj = [];                                     // If not exits then store null array in taskObj
+              }
+              else{
+                taskObj = JSON.parse(localValue)                  // If exits then create value in json object (using JSON parse to get value string to object)
+              }
+              let html='';
+              let showTaskList = document.getElementById("todoItems");
+              taskObj.forEach((item , index) => {
+                html+=`
+                      <thead class="table-light">
+                          <tr>
+                            <th scope="col">${index+1}</th>
+                            <th scope="col">${item}</th>
+                            <th scope="col">
+                              <button type="button" class="btn-sm btn-primary" onclick="editTask(${index})">Edit</button>
+                            </th>
+                            <th scope="col">
+                              <button type="button" class="btn-sm btn-danger" onclick="deleteTask(${index})">Delete</button>
+                            </th>
+                          </tr>
+                        </thead>`
+              });
+              showTaskList.innerHTML = html;
+            }
+
+              // edit task
+            function editTask(index){
+              let taskIndexValue = document.getElementById("taskUpdateIndexValue");
+              let addTaskButton = document.getElementById("addtaskbtn");
+              let updateTaskButton = document.getElementById("updatetaskbtn");
+              taskIndexValue.value = index;
+
+              // alert(index);
+              let localValue = localStorage.getItem("localTask");  // getting value from local storage
+              let taskObj = JSON.parse(localValue);
+              taskData.value=taskObj[index];
+              // alert(taskValue);
+              addTaskButton.style.display = "none";
+              updateTaskButton.style.display = "block";
+            }
+
+            //update task
+            let updateTaskButton = document.getElementById("updatetaskbtn");
+            
+            updateTaskButton.addEventListener("click",function(){
+              let addTaskButton = document.getElementById("addtaskbtn");
+              let taskData = document.getElementById("addTaskValue");
+              taskValue = taskData.value;
+              if(taskValue == "")
+                 {
+                    document.getElementById('todoErrors').innerHTML="**Please enter a task";
+                    
+                      document.getElementById("todoErrors").style.display = "block";
+                      setTimeout(function() {
+                        document.getElementById("todoErrors").style.display = "none";
+                      }, 3000); 
+                     return false;
+
+                 } if((taskValue.length <=2) || (taskValue.length > 20)){
+                    document.getElementById('todoErrors').innerHTML="**task name must be between 2 to 20";
+                    document.getElementById("todoErrors").style.display = "block";
+                      setTimeout(function() {
+                        document.getElementById("todoErrors").style.display = "none";
+                      }, 3000); 
+                    return false;
+                 }if(!isNaN(taskValue)){
+                    document.getElementById('todoErrors').innerHTML="**Only alphabate allow";
+                    document.getElementById("todoErrors").style.display = "block";
+                      setTimeout(function() {
+                        document.getElementById("todoErrors").style.display = "none";
+                      }, 3000); 
+                    return false;
+                 }else{
+                    let localValue = localStorage.getItem("localTask");  // getting value from local storage
+                    let taskObj = JSON.parse(localValue);
+                    let taskIndexValue = document.getElementById("taskUpdateIndexValue").value;
+                    taskObj[taskIndexValue]=taskData.value;
+                    document.getElementById('todoSuccess').innerHTML="Successfully updated !!";   
+                        document.getElementById("todoSuccess").style.display = "block";
+                        setTimeout(function() {
+                      document.getElementById("todoSuccess").style.display = "none";
+                    }, 3000); 
+                    updateTaskButton.style.display="none";
+                    addTaskButton.style.display = "block";
+                    localStorage.setItem("localTask",JSON.stringify(taskObj));  // set value in local storage   
+                    taskData.value='';
+                 }
+              showTask();  
+
+            })
+
+            //deletTask
+
+            function deleteTask(index){
+              let addTaskButton = document.getElementById("addtaskbtn");
+              let updateTaskButton = document.getElementById("updatetaskbtn");
+
+              let localValue = localStorage.getItem("localTask");  // getting value from local storage
+              let taskObj = JSON.parse(localValue);
+              alert('Are you sure ? You want to delete !');
+              taskObj.splice(index,1);                     //used to remove item from index array
+              updateTaskButton.style.display="none";
+              addTaskButton.style.display = "block";
+              document.getElementById('todoSuccess').innerHTML="Successfully Deleted !!";   
+                  document.getElementById("todoSuccess").style.display = "block";
+                  setTimeout(function() {
+                    document.getElementById("todoSuccess").style.display = "none";
+                  }, 3000); 
+              localStorage.setItem("localTask",JSON.stringify(taskObj));  // set value in local storage   
+              showTask();  
+            }
+
+        </script>
+    </body>
+</html> 
